@@ -8,13 +8,10 @@ import com.opencsv.CSVReader;
 import com.opencsv.exceptions.CsvException;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.text.ParseException;
-import java.util.Arrays;
 import java.util.LinkedList;
-import java.util.List;
 import java.util.Queue;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -27,18 +24,27 @@ public class Main {
 
     static String device_kid = "device1";
     static String key_set = "keys/keyset";
-
+    static String token = "token";
 
 
 
 
     public static void main(String[] args) throws JOSEException, IOException, ParseException {
+        loadOrGenerateKey(key_set, device_kid);
+        getToken();
+//        readAndEnqueeData();
+//        sendDataFromQueue();
+    }
 
+    private static void getToken() {
+        token = "new token";
+    }
+
+    private static void loadOrGenerateKey(String key_set, String device_kid) {
         try{
             JWKSet localKeys = JWKSet.load(new File(key_set));
             JWK foundKey = localKeys.getKeyByKeyId(device_kid);
             if (foundKey != null) {
-                String message = "key id already exists locally";
                 ECKey key = foundKey.toECKey();
                 System.out.println("BEGIN PUBLIC KEY");
                 System.out.println("kid="+key.getKeyID());
@@ -53,10 +59,8 @@ public class Main {
                 ECKey key = jwkGenerator.generateECJWK(device_kid, "P-256", "sig", "ES256");
                 JWKGenerator.writeKeyToFile(true, key_set, key, new Gson());
             }
-        }catch (IOException | ParseException ignored){
+        }catch (IOException | ParseException | JOSEException ignored){
         }
-//        readAndEnqueeData();
-//        sendDataFromQueue();
     }
 
     private static void readAndEnqueeData() {
